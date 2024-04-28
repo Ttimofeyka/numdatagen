@@ -26,15 +26,21 @@ void* addLine(void* arg) {
     std::string lines = "";
     for(int i=0; i<count; i++) {
         lines.appendC(words[std::randomInt(0, words.length-1)]);
+        short op = std::randomShort(0, 1); // TODO: divide (because using ltos, not dtos)
         int first = std::randomInt(minVal, maxVal);
         int second = std::randomInt(minVal, maxVal);
 
         std::cstring::ltos(first, &sFirst);
         std::cstring::ltos(second, &sSecond);
-        std::cstring::ltos(first + second, &sAnswer);
+
+        if(op == 0) std::cstring::ltos(first + second, &sAnswer);
+        else std::cstring::ltos(first - second, &sAnswer);
 
         lines.appendC(&sFirst);
-        lines.appendC(" + ");
+        
+        if(op == 0) lines.appendC(" + ");
+        else lines.appendC(" - ");
+
         lines.appendC(&sSecond);
         lines.appendC(" ### Response: ");
         lines.appendC(&sAnswer);
@@ -89,5 +95,7 @@ void main(int argc, char** argv) {
         pthread::join(thread[i], cast(void**)null);
     }
 
+    std::println("Generating is done! Writing to file '", dataset.name, "'...");
     std::fprint(dataset, buffer);
+    std::println("All done!");
 }
