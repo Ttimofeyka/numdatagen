@@ -9,8 +9,6 @@ import <std/io> <std/pthread> <std/thread> <std/random> <std/vector>
 int allDone;
 int needDone;
 
-int locker;
-
 std::vector<char*> words;
 std::file dataset;
 std::string buffer;
@@ -23,6 +21,7 @@ char[20] sFirst;
 char[20] sSecond;
 char[20] sAnswer;
 
+int locker;
 std::string genLine() {
     std::string line = std::string(words[std::randomInt(0, words.length-1)]);
 
@@ -43,21 +42,19 @@ std::string genLine() {
     line.add('\n');
 } => line;
 
+int locker;
 void* addLine(void* arg) {
-    std::thread::spinlock::lock(&locker);
     for(int i=0; i<count; i++) {
         std::string ln = genLine();
-            buffer.append(ln);
+            std::thread::spinlock::lock(&locker);
+                //std::fprint(dataset, ln);
+            std::thread::spinlock::unlock(&locker);
         ~ln;
-        if(buffer.length >= 256) {
-            std::fprint(dataset, buffer);
-            for(int j=0; j<buffer.length; j++) buffer.data[j] = '\0';
-            buffer.length = 0;
-        }
-        allDone += 1;
-        if((allDone % 100) == 0) std::println("Done: ", (cast(float)allDone / cast(float)needDone) * 100f, "%");
+        std::thread::spinlock::lock(&locker);
+            allDone += 1;
+            if((allDone % 100) == 0) std::println("Done: ", (cast(float)allDone / cast(float)needDone) * 100f, "%");
+        std::thread::spinlock::unlock(&locker);
     }
-    std::thread::spinlock::unlock(&locker);
 }
 
 void main(int argc, char** argv) {
@@ -83,26 +80,24 @@ void main(int argc, char** argv) {
     minVal = std::string(argv[4]).toInt();
     maxVal = std::string(argv[5]).toInt();
 
-    if(count > 500000) {
-        // TODO: there is segfault when number >= 500.000 (_int_realloc, _int_malloc, std::string.add, std::string.appendC)
-        // so 500.000 is maximum count
-        std::println("Count cannot be more than 500.000!");
-        std::exit(1);
-    }
-
     dataset = std::file(argv[1]);
     dataset.open("a");
 
     needDone = threads * count;
 
-    std::vector<ulong*> vThreads = std::vector<ulong*>();
-    for(int i=0; i<threads; i++) {
-        vThreads.add(cast(ulong*)std::malloc(sizeof(ulong)));
-        pthread::create(vThreads.data[i], cast(pthread::attribute*)null, addLine, null);
+    if(threads == 1) {
+        for(int i=0; i<count; i++) std::fprint(dataset, genLine());
     }
-
-    for(int i=0; i<threads; i++) {
-        ulong* thread = vThreads.data[i];
-        pthread::join(thread[0], cast(void**)null);
+    else {
+        std::vector<ulong*> vThreads = std::vector<ulong*>();
+        for(int i=0; i<threads; i++) {
+            vThreads.add(cast(ulong*)std::malloc(sizeof(ulong)));
+            pthread::create(vThreads.data[i], cast(pthread::attribute*)null, addLine, null);
+        }
+    
+        for(int i=0; i<threads; i++) {
+            ulong* thread = vThreads.data[i];
+            pthread::join(thread[0], cast(void**)null);
+        }
     }
 }
