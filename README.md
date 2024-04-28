@@ -7,7 +7,7 @@ The program uses pthread for multithreading.
 This program only needs the [Rave](https://github.com/Ttimofeyka/Rave) compiler.
 
 ## Testing
-To test, after compilation (using build.sh, build.bat or `rave main.rave -o numdatagen`) write:
+To test, after compilation (using build.sh, build.bat or `rave ./main.rave -o numdatagen`) write:
 
 for Windows: `numdatagen 2 100000 0 1000`,
 
