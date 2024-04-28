@@ -13,48 +13,41 @@ std::vector<char*> words;
 std::file dataset;
 std::string buffer;
 
-int minVal = 0;
-int maxVal = 0;
-int count = 0;
+int minVal;
+int maxVal;
+int count;
 
 char[20] sFirst;
 char[20] sSecond;
 char[20] sAnswer;
 
 int locker;
-std::string genLine() {
-    std::string line = std::string(words[std::randomInt(0, words.length-1)]);
-
-    int first = std::randomInt(minVal, maxVal);
-    int second = std::randomInt(minVal, maxVal);
-
-    char* buffer;
-
-    std::cstring::ltos(first, &sFirst);
-    std::cstring::ltos(second, &sSecond);
-    std::cstring::ltos(first + second, &sAnswer);
-
-    line.appendC(&sFirst);
-    line.appendC(" + ");
-    line.appendC(&sSecond);
-    line.appendC(" ### Response: ");
-    line.appendC(&sAnswer);
-    line.add('\n');
-} => line;
-
-int locker;
 void* addLine(void* arg) {
+    std::string lines = "";
     for(int i=0; i<count; i++) {
-        std::string ln = genLine();
-            std::thread::spinlock::lock(&locker);
-                //std::fprint(dataset, ln);
-            std::thread::spinlock::unlock(&locker);
-        ~ln;
+        lines.appendC(words[std::randomInt(0, words.length-1)]);
+        int first = std::randomInt(minVal, maxVal);
+        int second = std::randomInt(minVal, maxVal);
+
+        std::cstring::ltos(first, &sFirst);
+        std::cstring::ltos(second, &sSecond);
+        std::cstring::ltos(first + second, &sAnswer);
+
+        lines.appendC(&sFirst);
+        lines.appendC(" + ");
+        lines.appendC(&sSecond);
+        lines.appendC(" ### Response: ");
+        lines.appendC(&sAnswer);
+        lines.add('\n');
+        
         std::thread::spinlock::lock(&locker);
             allDone += 1;
             if((allDone % 100) == 0) std::println("Done: ", (cast(float)allDone / cast(float)needDone) * 100f, "%");
         std::thread::spinlock::unlock(&locker);
     }
+    std::thread::spinlock::lock(&locker);
+        buffer.append(lines);
+    std::thread::spinlock::unlock(&locker);
 }
 
 void main(int argc, char** argv) {
@@ -72,6 +65,7 @@ void main(int argc, char** argv) {
     words.add("### Instruction: Please, solve ");
     words.add("### Instruction: Write the answer for ");
     words.add("### Instruction: Solve ");
+    words.add("### Instruction: Please, write the answer of expression ");
 
     buffer = "";
 
@@ -84,20 +78,16 @@ void main(int argc, char** argv) {
     dataset.open("a");
 
     needDone = threads * count;
+    std::vector<ulong*> vThreads = std::vector<ulong*>();
+    for(int i=0; i<threads; i++) {
+        vThreads.add(cast(ulong*)std::malloc(sizeof(ulong)));
+        pthread::create(vThreads.data[i], cast(pthread::attribute*)null, addLine, null);
+    }
 
-    if(threads == 1) {
-        for(int i=0; i<count; i++) std::fprint(dataset, genLine());
+    for(int i=0; i<threads; i++) {
+        ulong* thread = vThreads.data[i];
+        pthread::join(thread[i], cast(void**)null);
     }
-    else {
-        std::vector<ulong*> vThreads = std::vector<ulong*>();
-        for(int i=0; i<threads; i++) {
-            vThreads.add(cast(ulong*)std::malloc(sizeof(ulong)));
-            pthread::create(vThreads.data[i], cast(pthread::attribute*)null, addLine, null);
-        }
-    
-        for(int i=0; i<threads; i++) {
-            ulong* thread = vThreads.data[i];
-            pthread::join(thread[0], cast(void**)null);
-        }
-    }
+
+    std::fprint(dataset, buffer);
 }
