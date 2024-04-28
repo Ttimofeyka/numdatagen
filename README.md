@@ -9,9 +9,11 @@ This program only needs the [Rave](https://github.com/Ttimofeyka/Rave) compiler.
 ## Testing
 To test, after compilation (using build.sh, build.bat or `rave ./main.rave -o numdatagen`) write:
 
-for Windows: `numdatagen 2 100000 0 1000`,
+for Windows: `numdatagen dataset.txt 2 100000 0 1000`,
 
-for Linux: `./numdatagen 2 100000 0 1000`.
+for Linux: `./numdatagen dataset.txt 2 100000 0 1000`.
+
+dataset.txt - name of file to write into;
 
 2 - count of threads;
 
