@@ -4,7 +4,7 @@ Public License, v. 2.0. If a copy of the MPL was not distributed
 with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-import <std/io> <std/pthread> <std/thread> <std/random> <std/vector>
+import <std/io> <std/thread> <std/random> <std/vector>
 
 int allDone;
 int needDone;
@@ -22,7 +22,7 @@ char[20] sSecond;
 char[20] sAnswer;
 
 int locker;
-void* addLine(void* arg) {
+int addLine(void* arg) {
     std::string lines = "";
     for(int i=0; i<count; i++) {
         lines.appendC(words[std::randomInt(0, words.length-1)]);
@@ -84,15 +84,17 @@ void main(int argc, char** argv) {
     dataset.open("a");
 
     needDone = threads * count;
-    std::vector<ulong*> vThreads = std::vector<ulong*>();
+    std::vector<std::thread> vThreads = std::vector<std::thread>();
+
     for(int i=0; i<threads; i++) {
-        vThreads.add(cast(ulong*)std::malloc(sizeof(ulong)));
-        pthread::create(vThreads.data[i], cast(pthread::attribute*)null, addLine, null);
+        auto thr = std::thread();
+        thr.run(addLine, null);
+        vThreads.add(thr);
     }
 
     for(int i=0; i<threads; i++) {
-        ulong* thread = vThreads.data[i];
-        pthread::join(thread[i], cast(void**)null);
+        auto thr = vThreads[i];
+        thr.join();
     }
 
     std::println("Generating is done! Writing to file '", dataset.name, "'...");
