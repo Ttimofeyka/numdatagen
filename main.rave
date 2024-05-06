@@ -39,7 +39,7 @@ int addLine(void* arg) {
         if(op == 0) std::cstring::ltos(first + second, &sAnswer);
         else std::cstring::ltos(first - second, &sAnswer);
 
-        lines.appendC(words[std::randomInt(0, words.length-1)]);
+        lines.appendC(words[cast(int)std::randomChar(0, words.length-1)]);
         lines.appendC(&sFirst);
         
         if(op == 0) lines.appendC(" + ");
