@@ -21,11 +21,15 @@ char[20] sFirst;
 char[20] sSecond;
 char[20] sAnswer;
 
+char[16] randomOperators;
+
 int locker;
 int addLine(void* arg) {
     std::string lines = "";
+    int cIndex;
+
     for(int i=0; i<count; i++) {
-        short op = std::randomShort(0, 1);
+        char op = randomOperators[cIndex];
         int first = std::randomInt(minVal, maxVal);
         int second = std::randomInt(minVal, maxVal);
 
@@ -50,6 +54,9 @@ int addLine(void* arg) {
             allDone += 1;
             if((allDone % 1000) == 0) std::println("Done: ", (cast(float)allDone / cast(float)needDone) * 100f, "%");
         std::thread::spinlock::unlock(&locker);
+
+        cIndex += 1;
+        if(cIndex == 16) cIndex = 0;
     }
     std::thread::spinlock::lock(&locker);
         buffer.add(lines);
@@ -79,6 +86,8 @@ void main(int argc, char** argv) {
     count = std::string(argv[3]).toInt();
     minVal = std::string(argv[4]).toInt();
     maxVal = std::string(argv[5]).toInt();
+
+    for(int i=0; i<16; i++) randomOperators[i] = std::randomChar(0, 1);
 
     dataset = std::file(argv[1]);
     dataset.open("a");
