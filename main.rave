@@ -17,7 +17,7 @@ int minVal;
 int maxVal;
 int count;
 
-char[16] randomOperators;
+char[20] randomOperators;
 
 int locker;
 int addLine(void* arg) {
@@ -56,7 +56,7 @@ int addLine(void* arg) {
         std::thread::spinlock::unlock(&locker);
 
         cIndex += 1;
-        if(cIndex == 16) cIndex = 0;
+        if(cIndex == 20) cIndex = 0;
     }
     std::thread::spinlock::lock(&locker);
         buffer.add(lines);
@@ -87,7 +87,7 @@ void main(int argc, char** argv) {
     minVal = std::string(argv[4]).toInt();
     maxVal = std::string(argv[5]).toInt();
 
-    for(int i=0; i<16; i++) randomOperators[i] = std::randomChar(0, 1);
+    for(int i=0; i<20; i++) randomOperators[i] = std::randomChar(0, 1);
 
     dataset = std::file(argv[1]);
     dataset.open("a");
