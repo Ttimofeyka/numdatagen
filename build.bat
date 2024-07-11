@@ -1,2 +1,2 @@
 @echo off
-rave ./main.rave -o numdatagen
+rave ./main.rave -o numdatagen -Ofast

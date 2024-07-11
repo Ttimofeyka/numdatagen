@@ -1,2 +1,2 @@
 #!/bin/sh
-rave ./main.rave -o numdatagen -O3
+rave ./main.rave -o numdatagen -Ofast
