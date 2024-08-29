@@ -6,61 +6,57 @@ with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import <std/io> <std/thread> <std/random> <std/vector>
 
+std::vector<char*> words;
+std::vector<std::string> buffer;
+int count;
+int minVal;
+int maxVal;
+std::file dataset;
+
 int allDone;
 int needDone;
 
-std::vector<char*> words;
-std::file dataset;
-std::vector<std::string> buffer;
-
-int minVal;
-int maxVal;
-int count;
-
 char[20] randomOperators;
 
-int locker;
-int addLine(void* arg) {
-    std::string lines = "";
-    int cIndex;
+int plSl;
+int processLine(void* arg) {
+    std::string str = "";
 
     char[20] sFirst;
     char[20] sSecond;
     char[20] sAnswer;
-
+    int opIndex;
+    
     for(int i=0; i<count; i++) {
-        char op = randomOperators[cIndex];
+        str.appendC("### Instruction: Please, solve ");
         int first = std::randomInt(minVal, maxVal);
         int second = std::randomInt(minVal, maxVal);
 
         std::cstring::ltos(first, &sFirst);
         std::cstring::ltos(second, &sSecond);
-
-        if(op == 0) std::cstring::ltos(first + second, &sAnswer);
+        
+        if(randomOperators[opIndex] == 0c) std::cstring::ltos(first + second, &sAnswer);
         else std::cstring::ltos(first - second, &sAnswer);
 
-        lines.appendC(words[cast(int)std::randomChar(0, words.length-1)]);
-        lines.appendC(&sFirst);
-        
-        if(op == 0) lines.appendC(" + ");
-        else lines.appendC(" - ");
+        str.appendC(&sFirst);
 
-        lines.appendC(&sSecond);
-        lines.appendC(" ### Response: ");
-        lines.appendC(&sAnswer);
-        lines.add('\n');
-        
-        std::thread::spinlock::lock(&locker);
+        if(randomOperators[opIndex] == 0c) str.appendC(" + ");
+        else str.appendC(" - ");
+
+        str.appendC(&sSecond);
+        str.appendC(" ### Response: ");
+        str.appendC(&sAnswer);
+        str.appendC("\n");
+
+        std::thread::spinlock::lock(&plSl);
             allDone += 1;
             if((allDone % 1000) == 0) std::println("Done: ", (cast(float)allDone / cast(float)needDone) * 100f, "%");
-        std::thread::spinlock::unlock(&locker);
+        std::thread::spinlock::unlock(&plSl);
 
-        cIndex += 1;
-        if(cIndex == 20) cIndex = 0;
+        opIndex += 1;
+        if(opIndex >= 20) opIndex = 0;
     }
-    std::thread::spinlock::lock(&locker);
-        buffer.add(lines);
-    std::thread::spinlock::unlock(&locker);
+    buffer.add(str);
 }
 
 void main(int argc, char** argv) {
@@ -86,32 +82,30 @@ void main(int argc, char** argv) {
     count = std::string(argv[3]).toInt();
     minVal = std::string(argv[4]).toInt();
     maxVal = std::string(argv[5]).toInt();
+    needDone = threads * count;
 
-    for(int i=0; i<20; i++) randomOperators[i] = std::randomChar(0, 1);
+    for(int i=0; i<20; i++) randomOperators[i] = cast(char)std::randomInt(0, 1);
 
     dataset = std::file(argv[1]);
-    dataset.open("a");
 
-    needDone = threads * count;
+    dataset.open("w");
+
     std::vector<std::thread> vThreads = std::vector<std::thread>();
 
     for(int i=0; i<threads; i++) {
-        auto thr = std::thread();
-        thr.run(addLine, null);
+        std::thread thr = std::thread();
+        thr.run(processLine, null);
         vThreads.add(thr);
     }
 
-    for(int i=0; i<threads; i++) {
-        auto thr = vThreads[i];
+    for(int i=0; i<vThreads.length; i++) {
+        std::thread thr = vThreads[i];
         thr.join();
     }
 
-    std::println("Generating is done! Writing to file '", dataset.name, "'...");
-    for(int i=0; i<buffer.length; i++) {
-        std::fprint(dataset, buffer[i]);
-        ~buffer[i];
-    }
-    ~buffer;
-    ~words;
+    for(int i=0; i<buffer.length; i++) dataset.write(buffer[i].data, buffer[i].length);
+    
+    ~dataset;
+
     std::println("All done!");
 }
