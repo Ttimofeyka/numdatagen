@@ -98,10 +98,7 @@ void main(int argc, char** argv) {
         vThreads.add(thr);
     }
 
-    for(int i=0; i<vThreads.length; i++) {
-        std::thread thr = vThreads[i];
-        thr.join();
-    }
+    for(int i=0; i<vThreads.length; i++) vThreads[i].join();
 
     for(int i=0; i<buffer.length; i++) dataset.write(buffer[i].data, buffer[i].length);
     
