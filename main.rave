@@ -6,7 +6,7 @@ with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import <std/io> <std/thread> <std/random> <std/vector>
 
-std::vector<char*> words;
+std::vector<char*> instructions;
 std::vector<std::string> buffer;
 int count;
 int minVal;
@@ -28,7 +28,10 @@ int processLine(void* arg) {
     int opIndex;
     
     for(int i=0; i<count; i++) {
-        str.appendC("### Instruction: Please, solve ");
+        str.appendC("### Instruction:\n");
+
+        str.appendC(instructions[std::randomInt(0, instructions.length - 1)]);
+    
         int first = std::randomInt(minVal, maxVal);
         int second = std::randomInt(minVal, maxVal);
 
@@ -44,9 +47,9 @@ int processLine(void* arg) {
         else str.appendC(" - ");
 
         str.appendC(&sSecond);
-        str.appendC(" ### Response: ");
+        str.appendC("\n\n### Response:\n");
         str.appendC(&sAnswer);
-        str.appendC("\n");
+        str.appendC("\n\n");
 
         std::thread::spinlock::lock(&plSl);
             allDone += 1;
@@ -70,11 +73,20 @@ void main(int argc, char** argv) {
         std::exit(1);
     }
 
-    words = std::vector<char*>();
-    words.add("### Instruction: Please, solve ");
-    words.add("### Instruction: Write the answer for ");
-    words.add("### Instruction: Solve ");
-    words.add("### Instruction: Please, write the answer of expression ");
+    instructions = std::vector<char*>();
+
+    instructions.add("Please, solve ");
+    instructions.add("Write the answer for ");
+    instructions.add("Solve ");
+    instructions.add("Please, write the answer of expression ");
+    instructions.add("Output the result number of ");
+    instructions.add("What is the result of ");
+    instructions.add("Tell me what is the result of ");
+    instructions.add("Result of ");
+    instructions.add("Answer of ");
+    instructions.add("Result for");
+    instructions.add("Answer for ");
+    instructions.add("");
 
     buffer = std::vector<std::string>();
 
@@ -103,6 +115,7 @@ void main(int argc, char** argv) {
     for(int i=0; i<buffer.length; i++) dataset.write(buffer[i].data, buffer[i].length);
     
     ~dataset;
+    ~instructions;
 
     std::println("All done!");
 }
