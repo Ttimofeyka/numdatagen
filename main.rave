@@ -84,7 +84,7 @@ void main(int argc, char** argv) {
 
     std::json::Value json = std::json::parse(fInstructionsData);
     std::json::Value jobject = json.get("instructions");
-    std::json::Value* jobjectptr = jobject.asObject();
+    std::json::Value* jobjectptr = jobject.asPointer();
 
     for(int i=0; i<jobject.length; i++) instructions.add(jobjectptr[i].asCString());
     
