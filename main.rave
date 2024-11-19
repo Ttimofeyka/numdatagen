@@ -4,7 +4,7 @@ Public License, v. 2.0. If a copy of the MPL was not distributed
 with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-import <std/io> <std/thread> <std/random> <std/vector>
+import <std/io> <std/thread> <std/random> <std/vector> <std/json>
 
 std::vector<char*> instructions;
 std::vector<std::string> buffer;
@@ -75,19 +75,19 @@ void main(int argc, char** argv) {
 
     instructions = std::vector<char*>();
 
-    instructions.add("Please, solve ");
-    instructions.add("Write the answer for ");
-    instructions.add("Solve ");
-    instructions.add("Please, write the answer of expression ");
-    instructions.add("Output the result number of ");
-    instructions.add("What is the result of ");
-    instructions.add("Tell me what is the result of ");
-    instructions.add("Result of ");
-    instructions.add("Answer of ");
-    instructions.add("Result for");
-    instructions.add("Answer for ");
-    instructions.add("");
+    // Read from instructions.json
 
+    std::file fInstructions = std::file("instructions.json");
+    fInstructions.open("r");
+    std::string fInstructionsData = fInstructions.readAll();
+    fInstructions.close();
+
+    std::json::Value json = std::json::parse(fInstructionsData);
+    std::json::Value jobject = json.get("instructions");
+    std::json::Value* jobjectptr = jobject.asObject();
+
+    for(int i=0; i<jobject.length; i++) instructions.add(jobjectptr[i].asCString());
+    
     buffer = std::vector<std::string>();
 
     int threads = std::string(argv[2]).toInt();
@@ -116,6 +116,8 @@ void main(int argc, char** argv) {
     
     ~dataset;
     ~instructions;
+    ~fInstructionsData;
+    ~json;
 
     std::println("All done!");
 }
