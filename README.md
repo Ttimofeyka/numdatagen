@@ -25,10 +25,10 @@ dataset.txt - name of file to write into;
 
 Tested on Windows 10 (using WSL), i5-12400f and 32 GB RAM (DDR4-3200).
 
-`time ./numdatagen dataset.txt 2 10000 -500 500` - 0.029s, 1.28MB
+`time ./numdatagen dataset.txt 2 10000 -500 500` - 0.019s, 1.28MB
 
-`time ./numdatagen dataset.txt 6 100000 500 2000` - 0.200s, 38.32MB
+`time ./numdatagen dataset.txt 6 100000 500 2000` - 0.134s, 38.32MB
 
-`time ./numdatagen dataset.txt 6 10000000 0 1000` - 19.303s, 3.64GB
+`time ./numdatagen dataset.txt 6 10000000 0 1000` - 16.540s, 3.64GB
 
 Due to the measurements of the program speed, it can be concluded that this generation algorithm is very effective.

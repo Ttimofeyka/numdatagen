@@ -7,7 +7,6 @@ with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 import <std/io> <std/thread> <std/random> <std/vector> <std/json>
 
 std::vector<char*> instructions;
-std::vector<std::string> buffer;
 int count;
 int minVal;
 int maxVal;
@@ -16,11 +15,17 @@ std::file dataset;
 int allDone;
 int needDone;
 
+int printN;
+int percentage;
+
 char[20] randomOperators;
 
 int plSl;
+int writeSl;
+
 int processLine(void* arg) {
-    std::string str = "";
+    std::string str = std::string(count * 64);
+    defer ~str;
 
     char[20] sFirst;
     char[20] sSecond;
@@ -52,14 +57,16 @@ int processLine(void* arg) {
 
         std::thread::spinlock::lock(&plSl);
             allDone += 1;
-            if((allDone % 1000) == 0) std::println("Done: ", (cast(float)allDone / cast(float)needDone) * 100f, "%");
+            if(allDone == printN) {allDone = 0; percentage += 1; std::println("Done: ", percentage, "%");}
         std::thread::spinlock::unlock(&plSl);
 
         opIndex += 1;
         if(opIndex >= 20) opIndex = 0;
     }
 
-    buffer.add(str);
+    std::thread::spinlock::lock(&writeSl);
+    dataset.write(str.data, str.length);
+    std::thread::spinlock::unlock(&writeSl);
 }
 
 void main(int argc, char** argv) {
@@ -88,13 +95,12 @@ void main(int argc, char** argv) {
 
     for(int i=0; i<jobject.length; i++) instructions.add(jobjectptr[i].asCString());
     
-    buffer = std::vector<std::string>();
-
     int threads = std::string(argv[2]).toInt();
     count = std::string(argv[3]).toInt();
     minVal = std::string(argv[4]).toInt();
     maxVal = std::string(argv[5]).toInt();
     needDone = threads * count;
+    printN = needDone / 100;
 
     for(int i=0; i<20; i++) randomOperators[i] = cast(char)std::randomInt(0, 1);
 
@@ -111,8 +117,6 @@ void main(int argc, char** argv) {
     }
 
     for(int i=0; i<vThreads.length; i++) vThreads[i].join();
-
-    for(int i=0; i<buffer.length; i++) dataset.write(buffer[i].data, buffer[i].length);
     
     ~dataset;
     ~instructions;
