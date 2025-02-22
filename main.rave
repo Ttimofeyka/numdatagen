@@ -28,8 +28,7 @@ int processLine(void* arg) {
     int opIndex;
     
     for(int i=0; i<count; i++) {
-        str.appendC("### Instruction:\n");
-
+        str.appendC("### Instruction:\n", 17);
         str.appendC(instructions[std::randomInt(0, instructions.length - 1)]);
     
         int first = std::randomInt(minVal, maxVal);
@@ -43,13 +42,13 @@ int processLine(void* arg) {
 
         str.appendC(&sFirst);
 
-        if(randomOperators[opIndex] == 0c) str.appendC(" + ");
-        else str.appendC(" - ");
+        if(randomOperators[opIndex] == 0c) str.appendC(" + ", 3);
+        else str.appendC(" - ", 3);
 
         str.appendC(&sSecond);
-        str.appendC("\n\n### Response:\n");
+        str.appendC("\n\n### Response:\n", 16);
         str.appendC(&sAnswer);
-        str.appendC("\n\n");
+        str.appendC("\n\n", 2);
 
         std::thread::spinlock::lock(&plSl);
             allDone += 1;
@@ -59,6 +58,7 @@ int processLine(void* arg) {
         opIndex += 1;
         if(opIndex >= 20) opIndex = 0;
     }
+
     buffer.add(str);
 }
 
