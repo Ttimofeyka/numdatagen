@@ -8,8 +8,8 @@ import <std/io> <std/thread> <std/random> <std/vector> <std/json>
 
 std::vector<char*> instructions;
 int count;
-int minVal;
-int maxVal;
+long minVal;
+long maxVal;
 std::file dataset;
 
 int allDone;
@@ -40,8 +40,8 @@ int processLine(void* arg) {
         str.append(instruction);
         str.appendC(instructions[std::randomInt(0, instructions.length - 1)]);
     
-        int first = std::randomInt(minVal, maxVal);
-        int second = std::randomInt(minVal, maxVal);
+        long first = cast(long)std::randomLong(minVal, maxVal);
+        long second = std::randomLong(minVal, maxVal);
 
         std::cstring::ltos(first, &sFirst);
         std::cstring::ltos(second, &sSecond);
