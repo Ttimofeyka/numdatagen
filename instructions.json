@@ -1,4 +1,9 @@
 {
+    "format": {
+        "instruction": "### Instruction:\n",
+        "response": "\n\n### Response:\n",
+        "after": "\n\n"
+    },
     "instructions": [
         "Please, solve ",
         "Write the answer for ",

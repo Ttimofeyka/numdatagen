@@ -23,6 +23,10 @@ char[20] randomOperators;
 int plSl;
 int writeSl;
 
+std::string instruction;
+std::string response;
+std::string after;
+
 int processLine(void* arg) {
     std::string str = std::string(count * 64);
     defer ~str;
@@ -33,7 +37,7 @@ int processLine(void* arg) {
     int opIndex;
     
     for(int i=0; i<count; i++) {
-        str.appendC("### Instruction:\n", 17);
+        str.append(instruction);
         str.appendC(instructions[std::randomInt(0, instructions.length - 1)]);
     
         int first = std::randomInt(minVal, maxVal);
@@ -51,9 +55,9 @@ int processLine(void* arg) {
         else str.appendC(" - ", 3);
 
         str.appendC(&sSecond);
-        str.appendC("\n\n### Response:\n", 16);
+        str.append(response);
         str.appendC(&sAnswer);
-        str.appendC("\n\n", 2);
+        str.append(after);
 
         std::thread::spinlock::lock(&plSl);
             allDone += 1;
@@ -90,6 +94,18 @@ void main(int argc, char** argv) {
     fInstructions.close();
 
     std::json::Value json = std::json::parse(fInstructionsData);
+
+    std::json::Value format = json.get("format");
+
+    instruction = format.get("instruction").asString();
+    defer ~instruction;
+
+    response = format.get("response").asString();
+    defer ~response;
+
+    after = format.get("after").asString();
+    defer ~after;
+
     std::json::Value jobject = json.get("instructions");
     std::json::Value* jobjectptr = jobject.asPointer();
 
