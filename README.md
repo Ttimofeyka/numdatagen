@@ -3,7 +3,7 @@ This program is designed to generate human-like requests/orders to solve a numer
 
 You can add your own instructions or own format using `instructions.json` file.
 
-Default format is Alpaca.
+Default format is `.jsonl` (`instruction`/`response`).
 
 ## Dependencies
 This program only needs the [Rave](https://github.com/Ttimofeyka/Rave) compiler.

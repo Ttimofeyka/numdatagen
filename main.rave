@@ -18,7 +18,7 @@ int needDone;
 int printN;
 int percentage;
 
-char[20] randomOperators;
+char[25] randomOperators;
 
 int plSl;
 int writeSl;
@@ -47,12 +47,14 @@ int processLine(void* arg) {
         std::cstring::ltos(second, &sSecond);
         
         if(randomOperators[opIndex] == 0c) std::cstring::ltos(first + second, &sAnswer);
-        else std::cstring::ltos(first - second, &sAnswer);
+        else if(randomOperators[opIndex] == 1c) std::cstring::ltos(first - second, &sAnswer);
+        else std::cstring::ltos(first * second, &sAnswer);
 
         str.appendC(&sFirst);
 
         if(randomOperators[opIndex] == 0c) str.appendC(" + ", 3);
-        else str.appendC(" - ", 3);
+        else if(randomOperators[opIndex] == 1c) str.appendC(" - ", 3);
+        else str.appendC(" * ", 3);
 
         str.appendC(&sSecond);
         str.append(response);
@@ -118,7 +120,7 @@ void main(int argc, char** argv) {
     needDone = threads * count;
     printN = needDone / 100;
 
-    for(int i=0; i<20; i++) randomOperators[i] = cast(char)std::randomInt(0, 1);
+    for(int i=0; i<25; i++) randomOperators[i] = cast(char)std::randomInt(0, 2);
 
     dataset = std::file(argv[1]);
 

@@ -1,8 +1,8 @@
 {
     "format": {
-        "instruction": "### Instruction:\n",
-        "response": "\n\n### Response:\n",
-        "after": "\n\n"
+        "instruction": "{\"instruction\": \"",
+        "response": "\", \"response\": \"",
+        "after": "\"}\n"
     },
     "instructions": [
         "Please, solve ",
