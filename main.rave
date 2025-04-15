@@ -4,7 +4,7 @@ Public License, v. 2.0. If a copy of the MPL was not distributed
 with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-import <std/io> <std/thread> <std/random> <std/vector> <std/json>
+import <std/io> <std/thread> <std/random> <std/vector> <std/json> <std/math>
 
 std::vector<char*> instructions;
 int count;
@@ -18,7 +18,7 @@ int needDone;
 int printN;
 int percentage;
 
-char[25] randomOperators;
+char[50] randomOperators;
 
 int plSl;
 int writeSl;
@@ -48,13 +48,15 @@ int processLine(void* arg) {
         
         if(randomOperators[opIndex] == 0c) std::cstring::ltos(first + second, &sAnswer);
         else if(randomOperators[opIndex] == 1c) std::cstring::ltos(first - second, &sAnswer);
-        else std::cstring::ltos(first * second, &sAnswer);
+        else if(randomOperators[opIndex] == 2c) std::cstring::ltos(first * second, &sAnswer);
+        else std::cstring::dtos(std::math::round(cast(double)first / cast(double)second, 6), 6, &sAnswer);
 
         str.appendC(&sFirst);
 
         if(randomOperators[opIndex] == 0c) str.appendC(" + ", 3);
         else if(randomOperators[opIndex] == 1c) str.appendC(" - ", 3);
-        else str.appendC(" * ", 3);
+        else if(randomOperators[opIndex] == 2c) str.appendC(" * ", 3);
+        else str.appendC(" / ", 3);
 
         str.appendC(&sSecond);
         str.append(response);
@@ -67,7 +69,7 @@ int processLine(void* arg) {
         std::thread::spinlock::unlock(&plSl);
 
         opIndex += 1;
-        if(opIndex >= 20) opIndex = 0;
+        if(opIndex >= 50) opIndex = 0;
     }
 
     std::thread::spinlock::lock(&writeSl);
@@ -120,7 +122,7 @@ void main(int argc, char** argv) {
     needDone = threads * count;
     printN = needDone / 100;
 
-    for(int i=0; i<25; i++) randomOperators[i] = cast(char)std::randomInt(0, 2);
+    for(int i=0; i<50; i++) randomOperators[i] = cast(char)std::randomInt(0, 3);
 
     dataset = std::file(argv[1]);
 
