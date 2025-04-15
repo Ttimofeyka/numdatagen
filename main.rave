@@ -31,9 +31,9 @@ int processLine(void* arg) {
     std::string str = std::string(count * 64);
     defer ~str;
 
-    char[20] sFirst;
-    char[20] sSecond;
-    char[20] sAnswer;
+    char[25] sFirst;
+    char[25] sSecond;
+    char[25] sAnswer;
     int opIndex;
     
     for(int i=0; i<count; i++) {
@@ -49,7 +49,12 @@ int processLine(void* arg) {
         if(randomOperators[opIndex] == 0c) std::cstring::ltos(first + second, &sAnswer);
         else if(randomOperators[opIndex] == 1c) std::cstring::ltos(first - second, &sAnswer);
         else if(randomOperators[opIndex] == 2c) std::cstring::ltos(first * second, &sAnswer);
-        else std::cstring::dtos(std::math::round(cast(double)first / cast(double)second, 6), 6, &sAnswer);
+        else {
+            if(second == 0) {
+                std::memcpy(&sAnswer, "Infinity", 9);
+            }
+            else std::cstring::dtos(std::math::round(cast(double)first / cast(double)second, 6), 6, &sAnswer);
+        }
 
         str.appendC(&sFirst);
 
