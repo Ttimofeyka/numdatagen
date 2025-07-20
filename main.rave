@@ -6,7 +6,7 @@ with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import <std/io> <std/thread> <std/random> <std/vector> <std/json> <std/math>
 
-std::vector<char*> instructions;
+std::vector<std::cstring> instructions;
 int count;
 int minVal;
 int maxVal;
@@ -93,33 +93,38 @@ void main(int argc, char** argv) {
         std::exit(1);
     }
 
-    instructions = std::vector<char*>();
+    instructions = std::vector<std::cstring>();
+    defer ~instructions;
 
     // Read from instructions.json
 
     std::file fInstructions = std::file("instructions.json");
+    defer ~fInstructions;
+
     fInstructions.open("r");
-    std::string fInstructionsData = fInstructions.readAll();
+        std::string fInstructionsData = fInstructions.readAll();
+        defer ~fInstructionsData;
     fInstructions.close();
 
     std::json::Value json = std::json::parse(fInstructionsData);
+    defer ~json;
 
     std::json::Value format = json.get("format");
 
-    instruction = format.get("instruction").asString();
+    instruction = format.get("instruction").as<std::string>();
     defer ~instruction;
 
-    response = format.get("response").asString();
+    response = format.get("response").as<std::string>();
     defer ~response;
 
-    after = format.get("after").asString();
+    after = format.get("after").as<std::string>();
     defer ~after;
 
     std::json::Value jobject = json.get("instructions");
-    std::json::Value* jobjectptr = jobject.asPointer();
+    std::json::Value* jobjectptr = jobject.pointer();
 
-    for(int i=0; i<jobject.length; i++) instructions.add(jobjectptr[i].asCString());
-    
+    for(usize i=0; i<jobject.length; i++) instructions.add(jobjectptr[i].as<std::cstring>());
+
     int threads = std::string(argv[2]).toInt();
     count = std::string(argv[3]).toInt();
     minVal = std::string(argv[4]).toInt();
@@ -130,23 +135,19 @@ void main(int argc, char** argv) {
     for(int i=0; i<50; i++) randomOperators[i] = cast(char)std::randomInt(0, 3);
 
     dataset = std::file(argv[1]);
+    defer ~dataset;
 
     dataset.open("w");
+        std::vector<std::thread> vThreads = std::vector<std::thread>();
 
-    std::vector<std::thread> vThreads = std::vector<std::thread>();
+        for(int i=0; i<threads; i++) {
+            std::thread thr = std::thread();
+            thr.run(processLine, null);
+            vThreads.add(thr);
+        }
 
-    for(int i=0; i<threads; i++) {
-        std::thread thr = std::thread();
-        thr.run(processLine, null);
-        vThreads.add(thr);
-    }
-
-    for(int i=0; i<vThreads.length; i++) vThreads[i].join();
-    
-    ~dataset;
-    ~instructions;
-    ~fInstructionsData;
-    ~json;
+        for(int i=0; i<vThreads.length; i++) vThreads[i].join();
+    dataset.close();
 
     std::println("All done!");
 }
